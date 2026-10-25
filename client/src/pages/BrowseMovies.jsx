@@ -18,8 +18,8 @@ const BrowseMovies = () => {
   const [status, setStatus] = useState(searchParams.get('status') || 'All');
   const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'rating');
 
-  const genresList = ['All', 'Action', 'Adventure', 'Sci-Fi', 'Drama', 'Animation', 'Biography', 'Crime', 'Thriller'];
-  const languagesList = ['All', 'English', 'Spanish', 'French', 'Japanese', 'Hindi'];
+  const genresList = ['All', 'Action', 'Adventure', 'Comedy', 'Drama', 'Romance', 'Sci-Fi', 'Crime', 'Thriller', 'Animation', 'Biography'];
+  const languagesList = ['All', 'Hindi', 'Telugu', 'Kannada', 'English', 'Spanish'];
 
   const fetchMovies = async () => {
     try {

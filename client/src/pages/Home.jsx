@@ -26,7 +26,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [trailerModal, setTrailerModal] = useState({ isOpen: false, url: '', title: '' });
 
-  const genres = ['All', 'Action', 'Adventure', 'Sci-Fi', 'Drama', 'Animation', 'Biography'];
+  const genres = ['All', 'Action', 'Adventure', 'Comedy', 'Drama', 'Romance', 'Sci-Fi', 'Crime', 'Biography'];
 
   useEffect(() => {
     const fetchData = async () => {
