@@ -6,6 +6,10 @@ let memoryServer = null;
  * Connect to MongoDB using configured URI or fallback to MongoMemoryServer
  */
 export const connectDB = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
   const uri = process.env.MONGODB_URI;
 
   if (uri && uri.trim() !== '') {
@@ -17,6 +21,19 @@ export const connectDB = async () => {
       return conn;
     } catch (err) {
       console.warn(`[MongoDB] External connection failed (${err.message}). Falling back to in-memory instance...`);
+    }
+  }
+
+  // Attempt connection to already-running local instance (e.g. active server on 7181 or 27017)
+  const candidatePorts = [7181, 27017];
+  for (const port of candidatePorts) {
+    try {
+      const candidateUri = `mongodb://127.0.0.1:${port}/imovies`;
+      const conn = await mongoose.connect(candidateUri, { serverSelectionTimeoutMS: 800 });
+      console.log(`[MongoDB] Connected to active local MongoDB instance at: ${candidateUri}`);
+      return conn;
+    } catch (e) {
+      // Continue to next candidate or fallback
     }
   }
 
