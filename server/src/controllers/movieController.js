@@ -1,6 +1,31 @@
 import Movie from '../models/Movie.js';
 import mongoose from 'mongoose';
 
+export const enrichMovieWithPricing = (movie) => {
+  if (!movie) return movie;
+  const doc = movie.toObject ? movie.toObject() : { ...movie };
+  const title = doc.title || '';
+
+  if (doc.ticketPrice && doc.ticketPrice.standard && doc.ticketPrice.standard !== 12.0) {
+    return doc;
+  }
+
+  const isBlockbuster = /gladiator|dune|oppenheimer|avatar|interstellar/i.test(title);
+  const isAction = /mission|spider-man|dark knight|jawan|leo|rrr|kgf/i.test(title);
+  const isFamilyComedy = (doc.genres && (doc.genres.includes('Comedy') || doc.genres.includes('Animation'))) || /3 idiots/i.test(title);
+
+  if (isBlockbuster) {
+    doc.ticketPrice = { standard: 16.0, premium: 20.0, vip: 26.0 };
+  } else if (isAction) {
+    doc.ticketPrice = { standard: 14.0, premium: 18.0, vip: 24.0 };
+  } else if (isFamilyComedy) {
+    doc.ticketPrice = { standard: 10.0, premium: 14.0, vip: 18.0 };
+  } else {
+    doc.ticketPrice = { standard: 12.0, premium: 16.0, vip: 22.0 };
+  }
+  return doc;
+};
+
 /**
  * @route   GET /api/movies
  * @desc    Get all movies with search, filters, sorting, and pagination
@@ -69,7 +94,7 @@ export const getMovies = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: movies,
+      data: movies.map(enrichMovieWithPricing),
       pagination: {
         page: pageNum,
         limit: limitNum,
@@ -98,12 +123,12 @@ export const getFeaturedMovies = async (req, res, next) => {
       const fallback = await Movie.find({ status: 'NOW_SHOWING' })
         .sort({ rating: -1 })
         .limit(5);
-      return res.status(200).json({ success: true, data: fallback });
+      return res.status(200).json({ success: true, data: fallback.map(enrichMovieWithPricing) });
     }
 
     res.status(200).json({
       success: true,
-      data: movies,
+      data: movies.map(enrichMovieWithPricing),
     });
   } catch (error) {
     next(error);
@@ -120,7 +145,7 @@ export const getNowShowing = async (req, res, next) => {
     const movies = await Movie.find({ status: 'NOW_SHOWING' }).sort({ rating: -1 });
     res.status(200).json({
       success: true,
-      data: movies,
+      data: movies.map(enrichMovieWithPricing),
     });
   } catch (error) {
     next(error);
@@ -137,7 +162,7 @@ export const getComingSoon = async (req, res, next) => {
     const movies = await Movie.find({ status: 'COMING_SOON' }).sort({ releaseDate: 1 });
     res.status(200).json({
       success: true,
-      data: movies,
+      data: movies.map(enrichMovieWithPricing),
     });
   } catch (error) {
     next(error);
@@ -170,7 +195,7 @@ export const getMovieById = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      data: movie,
+      data: enrichMovieWithPricing(movie),
     });
   } catch (error) {
     next(error);
@@ -200,6 +225,7 @@ export const createMovie = async (req, res, next) => {
       trailerUrl,
       status,
       isFeatured,
+      ticketPrice,
     } = req.body;
 
     const movie = await Movie.create({
@@ -218,12 +244,13 @@ export const createMovie = async (req, res, next) => {
       trailerUrl,
       status: status || 'NOW_SHOWING',
       isFeatured: Boolean(isFeatured),
+      ticketPrice: ticketPrice || { standard: 12.0, premium: 16.0, vip: 22.0 },
     });
 
     res.status(201).json({
       success: true,
       message: 'Movie created successfully',
-      data: movie,
+      data: enrichMovieWithPricing(movie),
     });
   } catch (error) {
     next(error);

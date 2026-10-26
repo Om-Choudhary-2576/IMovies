@@ -53,6 +53,12 @@ const Home = () => {
 
   const currentHero = featuredMovies[activeHeroIdx] || null;
 
+  const heroPricing = currentHero?.ticketPrice || {
+    standard: 12.0,
+    premium: 16.0,
+    vip: 22.0,
+  };
+
   const filteredNowShowing = selectedGenre === 'All'
     ? nowShowing
     : nowShowing.filter((m) => m.genres?.some((g) => g.toLowerCase() === selectedGenre.toLowerCase()));
@@ -124,7 +130,7 @@ const Home = () => {
                 fontSize: '1.05rem',
                 lineHeight: 1.6,
                 color: '#cbd5e1',
-                marginBottom: '32px',
+                marginBottom: '24px',
                 display: '-webkit-box',
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: 'vertical',
@@ -134,10 +140,50 @@ const Home = () => {
                 {currentHero.description}
               </p>
 
+              {/* Hero Ticket Pricing Info Bar */}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '14px',
+                background: 'rgba(14, 18, 27, 0.75)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(139, 92, 246, 0.35)',
+                borderRadius: '12px',
+                padding: '10px 18px',
+                marginBottom: '28px',
+                flexWrap: 'wrap',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontWeight: 800,
+                  fontSize: '0.95rem',
+                  color: '#34d399',
+                }}>
+                  <Ticket size={16} color="#34d399" />
+                  Ticket Prices: From ${heroPricing.standard.toFixed(2)}
+                </div>
+                <div style={{ height: '18px', width: '1px', background: 'rgba(255, 255, 255, 0.15)' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.84rem' }}>
+                  <span style={{ color: '#94a3b8' }}>
+                    Standard: <strong style={{ color: '#ffffff' }}>${heroPricing.standard.toFixed(0)}</strong>
+                  </span>
+                  <span style={{ color: '#94a3b8' }}>
+                    Premium: <strong style={{ color: '#c4b5fd' }}>${heroPricing.premium.toFixed(0)}</strong>
+                  </span>
+                  <span style={{ color: '#94a3b8' }}>
+                    VIP: <strong style={{ color: '#fcd34d' }}>${heroPricing.vip.toFixed(0)}</strong>
+                  </span>
+                </div>
+              </div>
+
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                 <Link to={`/movies/${currentHero.slug || currentHero._id}`} className="btn-primary" style={{ padding: '14px 30px', fontSize: '1rem' }}>
-                  <Ticket size={20} /> Book Tickets Now
+                  <Ticket size={20} /> Book Tickets &bull; From ${heroPricing.standard.toFixed(0)}
                 </Link>
                 {currentHero.trailerUrl && (
                   <button
@@ -213,7 +259,7 @@ const Home = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div>
               <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '6px' }}>Now Showing In Theatres</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.92rem' }}>Catch the latest blockbuster releases on big screens near you</p>
+              <p style={{ color: '#94a3b8', fontSize: '0.92rem' }}>Catch the latest blockbuster releases on big screens near you &bull; Live ticket prices shown for all tiers</p>
             </div>
             <Link to="/movies?status=NOW_SHOWING" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#8b5cf6', fontWeight: 600, fontSize: '0.92rem' }}>
               View All <ChevronRight size={18} />
@@ -241,7 +287,7 @@ const Home = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div>
                 <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '6px' }}>Coming Soon</h2>
-                <p style={{ color: '#94a3b8', fontSize: '0.92rem' }}>Anticipated blockbusters arriving soon to IMovies theatres</p>
+                <p style={{ color: '#94a3b8', fontSize: '0.92rem' }}>Anticipated blockbusters arriving soon &bull; Advance booking ticket prices</p>
               </div>
               <Link to="/movies?status=COMING_SOON" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#8b5cf6', fontWeight: 600, fontSize: '0.92rem' }}>
                 Explore All <ChevronRight size={18} />

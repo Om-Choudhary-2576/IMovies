@@ -31,4 +31,22 @@ describe('MovieCard Component', () => {
     expect(screen.getByText('Sci-Fi')).toBeInTheDocument();
     expect(screen.getByText('Book Tickets')).toBeInTheDocument();
   });
+
+  it('renders ticket price and tier breakdowns correctly', () => {
+    const movieWithCustomPrice = {
+      ...mockMovie,
+      ticketPrice: { standard: 14.0, premium: 18.0, vip: 24.0 },
+    };
+
+    render(
+      <BrowserRouter>
+        <MovieCard movie={movieWithCustomPrice} />
+      </BrowserRouter>
+    );
+
+    expect(screen.getAllByText('From $14.00').length).toBeGreaterThan(0);
+    expect(screen.getByText('$14')).toBeInTheDocument();
+    expect(screen.getByText('$18')).toBeInTheDocument();
+    expect(screen.getByText('$24')).toBeInTheDocument();
+  });
 });

@@ -4,6 +4,9 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 import authRoutes from './routes/authRoutes.js';
 import movieRoutes from './routes/movieRoutes.js';
 import theatreRoutes from './routes/theatreRoutes.js';
@@ -15,7 +18,15 @@ import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicPath = path.resolve(__dirname, '../../client/public');
+
 const app = express();
+
+// Serve local movie posters and static assets
+app.use(express.static(publicPath));
+app.use('/posters', express.static(path.join(publicPath, 'posters')));
 
 // Security Middlewares
 app.use(helmet({

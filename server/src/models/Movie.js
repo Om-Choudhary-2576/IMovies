@@ -85,6 +85,11 @@ const movieSchema = new mongoose.Schema(
       default: false,
       index: true,
     },
+    ticketPrice: {
+      standard: { type: Number, default: 12.0 },
+      premium: { type: Number, default: 16.0 },
+      vip: { type: Number, default: 22.0 },
+    },
   },
   {
     timestamps: true,
