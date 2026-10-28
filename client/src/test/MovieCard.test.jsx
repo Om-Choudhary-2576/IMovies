@@ -16,9 +16,10 @@ describe('MovieCard Component', () => {
     language: 'English',
     certification: 'PG-13',
     status: 'NOW_SHOWING',
+    ticketPrice: { standard: 14.0, premium: 18.0, vip: 24.0 },
   };
 
-  it('renders movie title, rating, and duration correctly', () => {
+  it('renders movie title, rating, language, genres, and Book Tickets button', () => {
     render(
       <BrowserRouter>
         <MovieCard movie={mockMovie} />
@@ -28,25 +29,30 @@ describe('MovieCard Component', () => {
     expect(screen.getByText('Interstellar')).toBeInTheDocument();
     expect(screen.getByText('8.7')).toBeInTheDocument();
     expect(screen.getByText('169m')).toBeInTheDocument();
+    expect(screen.getByText('English')).toBeInTheDocument();
+    expect(screen.getByText('PG-13')).toBeInTheDocument();
     expect(screen.getByText('Sci-Fi')).toBeInTheDocument();
+    expect(screen.getByText('Adventure')).toBeInTheDocument();
     expect(screen.getByText('Book Tickets')).toBeInTheDocument();
   });
 
-  it('renders ticket price and tier breakdowns correctly', () => {
-    const movieWithCustomPrice = {
-      ...mockMovie,
-      ticketPrice: { standard: 14.0, premium: 18.0, vip: 24.0 },
-    };
-
+  it('does NOT display any ticket price badges, tier pricing, or "From $" labels', () => {
     render(
       <BrowserRouter>
-        <MovieCard movie={movieWithCustomPrice} />
+        <MovieCard movie={mockMovie} />
       </BrowserRouter>
     );
 
-    expect(screen.getAllByText('From $14.00').length).toBeGreaterThan(0);
-    expect(screen.getByText('$14')).toBeInTheDocument();
-    expect(screen.getByText('$18')).toBeInTheDocument();
-    expect(screen.getByText('$24')).toBeInTheDocument();
+    // Assert that no price badges or "From $" labels appear
+    expect(screen.queryByText(/From \$/i)).toBeNull();
+    expect(screen.queryByText(/Ticket Price/i)).toBeNull();
+    expect(screen.queryByText(/\$14/)).toBeNull();
+    expect(screen.queryByText(/\$18/)).toBeNull();
+    expect(screen.queryByText(/\$24/)).toBeNull();
+    expect(screen.queryByText(/\$12/)).toBeNull();
+    expect(screen.queryByText('Standard')).toBeNull();
+    expect(screen.queryByText('Premium')).toBeNull();
+    expect(screen.queryByText('VIP')).toBeNull();
   });
 });
+

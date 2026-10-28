@@ -161,6 +161,9 @@ const MovieDetails = () => {
               <img
                 src={movie.posterUrl}
                 alt={movie.title}
+                onError={(e) => {
+                  e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450"><rect width="300" height="450" fill="%23161c2b"/><text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" fill="%238b5cf6" font-family="sans-serif" font-size="32">🎬</text><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="%2394a3b8" font-family="sans-serif" font-size="14" font-weight="bold">IMOVIES</text></svg>';
+                }}
                 style={{ width: '100%', display: 'block', aspectRatio: '2/3', objectFit: 'cover' }}
               />
             </div>
@@ -419,6 +422,7 @@ const MovieDetails = () => {
       <TrailerModal
         isOpen={trailerOpen}
         trailerUrl={movie.trailerUrl}
+        alternativeTrailerUrl={movie.alternativeTrailerUrl}
         title={movie.title}
         onClose={() => setTrailerOpen(false)}
       />

@@ -150,6 +150,9 @@ const MyBookings = () => {
                 <img
                   src={b.movie.posterUrl}
                   alt={b.movie.title}
+                  onError={(e) => {
+                    e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="90" height="130" viewBox="0 0 90 130"><rect width="90" height="130" fill="%23161c2b"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="%238b5cf6" font-family="sans-serif" font-size="24">🎬</text></svg>';
+                  }}
                   style={{ width: '90px', height: '130px', objectFit: 'cover', borderRadius: '10px' }}
                 />
               ) : (

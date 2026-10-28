@@ -2,6 +2,7 @@ import app from './app.js';
 import { connectDB, disconnectDB } from './config/db.js';
 import Movie from './models/Movie.js';
 import { seedDatabase } from '../scripts/seed.js';
+import { syncVerifiedTrailers } from './utils/syncTrailers.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -15,6 +16,9 @@ const startServer = async () => {
     if (movieCount === 0) {
       console.log('[Startup] Empty database detected. Auto-seeding cinema catalog and demo accounts...');
       await seedDatabase();
+    } else {
+      // Ensure existing movies have verified trailer URLs without touching any user/booking data
+      await syncVerifiedTrailers();
     }
 
     const server = app.listen(PORT, () => {

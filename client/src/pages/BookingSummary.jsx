@@ -180,6 +180,9 @@ const BookingSummary = () => {
                 <img
                   src={selectedShow.movie.posterUrl}
                   alt={selectedShow.movie.title}
+                  onError={(e) => {
+                    e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="120" viewBox="0 0 80 120"><rect width="80" height="120" fill="%23161c2b"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="%238b5cf6" font-family="sans-serif" font-size="24">🎬</text></svg>';
+                  }}
                   style={{ width: '80px', height: '120px', objectFit: 'cover', borderRadius: '10px' }}
                 />
               )}

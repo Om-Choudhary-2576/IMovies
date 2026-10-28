@@ -73,6 +73,26 @@ const movieSchema = new mongoose.Schema(
     trailerUrl: {
       type: String,
       default: '',
+      trim: true,
+      validate: {
+        validator: function (v) {
+          if (!v || typeof v !== 'string' || v.trim() === '') return true;
+          return /(?:youtube(?:-nocookie)?\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/|^)([a-zA-Z0-9_-]{11})/i.test(v.trim());
+        },
+        message: (props) => `${props.value} is not a valid YouTube video URL or ID!`,
+      },
+    },
+    alternativeTrailerUrl: {
+      type: String,
+      default: '',
+      trim: true,
+      validate: {
+        validator: function (v) {
+          if (!v || typeof v !== 'string' || v.trim() === '') return true;
+          return /(?:youtube(?:-nocookie)?\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/|^)([a-zA-Z0-9_-]{11})/i.test(v.trim());
+        },
+        message: (props) => `${props.value} is not a valid YouTube video URL or ID!`,
+      },
     },
     status: {
       type: String,

@@ -11,6 +11,8 @@ import {
   Film,
   Calendar,
   ChevronRight,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { moviesApi } from '../services/api';
 import MovieCard from '../components/MovieCard';
@@ -24,44 +26,66 @@ const Home = () => {
   const [activeHeroIdx, setActiveHeroIdx] = useState(0);
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [loading, setLoading] = useState(true);
-  const [trailerModal, setTrailerModal] = useState({ isOpen: false, url: '', title: '' });
+  const [error, setError] = useState(null);
+  const [trailerModal, setTrailerModal] = useState({ isOpen: false, url: '', altUrl: '', title: '' });
 
   const genres = ['All', 'Action', 'Adventure', 'Comedy', 'Drama', 'Romance', 'Sci-Fi', 'Crime', 'Biography'];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [featRes, nowRes, soonRes] = await Promise.all([
-          moviesApi.getFeatured(),
-          moviesApi.getNowShowing(),
-          moviesApi.getComingSoon(),
-        ]);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [featRes, nowRes, soonRes] = await Promise.allSettled([
+        moviesApi.getFeatured(),
+        moviesApi.getNowShowing(),
+        moviesApi.getComingSoon(),
+      ]);
 
-        if (featRes.success) setFeaturedMovies(featRes.data);
-        if (nowRes.success) setNowShowing(nowRes.data);
-        if (soonRes.success) setComingSoon(soonRes.data);
-      } catch (err) {
-        console.error('Failed to load movies for home page:', err);
-      } finally {
-        setLoading(false);
+      let hasData = false;
+
+      if (featRes.status === 'fulfilled' && featRes.value?.success) {
+        setFeaturedMovies(featRes.value.data || []);
+        hasData = true;
       }
-    };
+      if (nowRes.status === 'fulfilled' && nowRes.value?.success) {
+        setNowShowing(nowRes.value.data || []);
+        hasData = true;
+      }
+      if (soonRes.status === 'fulfilled' && soonRes.value?.success) {
+        setComingSoon(soonRes.value.data || []);
+        hasData = true;
+      }
 
+      if (!hasData) {
+        const failReason =
+          (nowRes.status === 'rejected' && nowRes.reason?.message) ||
+          (featRes.status === 'rejected' && featRes.reason?.message) ||
+          'Failed to connect to the movie catalog server.';
+        setError(failReason);
+      }
+    } catch (err) {
+      console.error('Failed to load movies for home page:', err);
+      setError(err.message || 'Failed to connect to cinema servers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
   const currentHero = featuredMovies[activeHeroIdx] || null;
 
-  const heroPricing = currentHero?.ticketPrice || {
-    standard: 12.0,
-    premium: 16.0,
-    vip: 22.0,
-  };
-
-  const filteredNowShowing = selectedGenre === 'All'
+  const isAll = !selectedGenre || selectedGenre.trim().toLowerCase() === 'all';
+  const filteredNowShowing = isAll
     ? nowShowing
-    : nowShowing.filter((m) => m.genres?.some((g) => g.toLowerCase() === selectedGenre.toLowerCase()));
+    : nowShowing.filter((m) => {
+        if (!Array.isArray(m?.genres)) return false;
+        return m.genres.some(
+          (g) => typeof g === 'string' && g.trim().toLowerCase() === selectedGenre.trim().toLowerCase()
+        );
+      });
 
   return (
     <div>
@@ -140,54 +164,19 @@ const Home = () => {
                 {currentHero.description}
               </p>
 
-              {/* Hero Ticket Pricing Info Bar */}
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '14px',
-                background: 'rgba(14, 18, 27, 0.75)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                border: '1px solid rgba(139, 92, 246, 0.35)',
-                borderRadius: '12px',
-                padding: '10px 18px',
-                marginBottom: '28px',
-                flexWrap: 'wrap',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontWeight: 800,
-                  fontSize: '0.95rem',
-                  color: '#34d399',
-                }}>
-                  <Ticket size={16} color="#34d399" />
-                  Ticket Prices: From ${heroPricing.standard.toFixed(2)}
-                </div>
-                <div style={{ height: '18px', width: '1px', background: 'rgba(255, 255, 255, 0.15)' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '0.84rem' }}>
-                  <span style={{ color: '#94a3b8' }}>
-                    Standard: <strong style={{ color: '#ffffff' }}>${heroPricing.standard.toFixed(0)}</strong>
-                  </span>
-                  <span style={{ color: '#94a3b8' }}>
-                    Premium: <strong style={{ color: '#c4b5fd' }}>${heroPricing.premium.toFixed(0)}</strong>
-                  </span>
-                  <span style={{ color: '#94a3b8' }}>
-                    VIP: <strong style={{ color: '#fcd34d' }}>${heroPricing.vip.toFixed(0)}</strong>
-                  </span>
-                </div>
-              </div>
-
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                 <Link to={`/movies/${currentHero.slug || currentHero._id}`} className="btn-primary" style={{ padding: '14px 30px', fontSize: '1rem' }}>
-                  <Ticket size={20} /> Book Tickets &bull; From ${heroPricing.standard.toFixed(0)}
+                  <Ticket size={20} /> Book Tickets
                 </Link>
                 {currentHero.trailerUrl && (
                   <button
-                    onClick={() => setTrailerModal({ isOpen: true, url: currentHero.trailerUrl, title: currentHero.title })}
+                    onClick={() => setTrailerModal({
+                      isOpen: true,
+                      url: currentHero.trailerUrl,
+                      altUrl: currentHero.alternativeTrailerUrl,
+                      title: currentHero.title,
+                    })}
                     className="btn-secondary"
                     style={{ padding: '14px 26px', fontSize: '1rem' }}
                   >
@@ -259,7 +248,7 @@ const Home = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div>
               <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '6px' }}>Now Showing In Theatres</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.92rem' }}>Catch the latest blockbuster releases on big screens near you &bull; Live ticket prices shown for all tiers</p>
+              <p style={{ color: '#94a3b8', fontSize: '0.92rem' }}>Catch the latest blockbuster releases on big screens near you</p>
             </div>
             <Link to="/movies?status=NOW_SHOWING" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#8b5cf6', fontWeight: 600, fontSize: '0.92rem' }}>
               View All <ChevronRight size={18} />
@@ -268,6 +257,21 @@ const Home = () => {
 
           {loading ? (
             <MovieGridSkeleton count={8} />
+          ) : error && nowShowing.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '40px 20px', textAlign: 'center' }}>
+              <AlertCircle size={40} color="#ef4444" style={{ marginBottom: '12px', display: 'inline-block' }} />
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', color: '#ffffff' }}>Unable to Load Movies</h3>
+              <p style={{ color: '#94a3b8', maxWidth: '480px', margin: '0 auto 20px', fontSize: '0.92rem' }}>
+                {error}
+              </p>
+              <button
+                onClick={fetchData}
+                className="btn-primary"
+                style={{ padding: '10px 24px', fontSize: '0.9rem' }}
+              >
+                <RefreshCw size={16} /> Retry Connection
+              </button>
+            </div>
           ) : filteredNowShowing.length > 0 ? (
             <div className="movies-grid">
               {filteredNowShowing.map((movie) => (
@@ -276,7 +280,9 @@ const Home = () => {
             </div>
           ) : (
             <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
-              No movies found for the selected genre. Try another filter.
+              {isAll
+                ? 'No movies currently showing. Check back soon for new releases.'
+                : `No movies found for the "${selectedGenre}" genre. Try another filter.`}
             </div>
           )}
         </section>
@@ -287,7 +293,7 @@ const Home = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div>
                 <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '6px' }}>Coming Soon</h2>
-                <p style={{ color: '#94a3b8', fontSize: '0.92rem' }}>Anticipated blockbusters arriving soon &bull; Advance booking ticket prices</p>
+                <p style={{ color: '#94a3b8', fontSize: '0.92rem' }}>Anticipated blockbusters arriving soon &bull; Reserve your seats early</p>
               </div>
               <Link to="/movies?status=COMING_SOON" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#8b5cf6', fontWeight: 600, fontSize: '0.92rem' }}>
                 Explore All <ChevronRight size={18} />
@@ -353,8 +359,9 @@ const Home = () => {
       <TrailerModal
         isOpen={trailerModal.isOpen}
         trailerUrl={trailerModal.url}
+        alternativeTrailerUrl={trailerModal.altUrl}
         title={trailerModal.title}
-        onClose={() => setTrailerModal({ isOpen: false, url: '', title: '' })}
+        onClose={() => setTrailerModal({ isOpen: false, url: '', altUrl: '', title: '' })}
       />
     </div>
   );

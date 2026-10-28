@@ -34,6 +34,7 @@ const AdminMovies = () => {
     certification: 'PG-13',
     rating: 8.5,
     trailerUrl: '',
+    alternativeTrailerUrl: '',
     status: 'NOW_SHOWING',
     isFeatured: false,
   });
@@ -75,6 +76,7 @@ const AdminMovies = () => {
       certification: 'PG-13',
       rating: 8.0,
       trailerUrl: '',
+      alternativeTrailerUrl: '',
       status: 'NOW_SHOWING',
       isFeatured: false,
     });
@@ -99,6 +101,7 @@ const AdminMovies = () => {
       certification: movie.certification,
       rating: movie.rating,
       trailerUrl: movie.trailerUrl || '',
+      alternativeTrailerUrl: movie.alternativeTrailerUrl || '',
       status: movie.status,
       isFeatured: movie.isFeatured,
     });
@@ -192,7 +195,14 @@ const AdminMovies = () => {
             {movies.map((m) => (
               <tr key={m._id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', color: '#cbd5e1' }}>
                 <td style={{ padding: '12px 14px' }}>
-                  <img src={m.posterUrl} alt={m.title} style={{ width: '45px', height: '65px', objectFit: 'cover', borderRadius: '6px' }} />
+                  <img
+                    src={m.posterUrl}
+                    alt={m.title}
+                    onError={(e) => {
+                      e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="45" height="65" viewBox="0 0 45 65"><rect width="45" height="65" fill="%23161c2b"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="%238b5cf6" font-family="sans-serif" font-size="16">🎬</text></svg>';
+                    }}
+                    style={{ width: '45px', height: '65px', objectFit: 'cover', borderRadius: '6px' }}
+                  />
                 </td>
                 <td style={{ padding: '12px 14px', fontWeight: 700, color: '#ffffff' }}>
                   {m.title}
@@ -301,10 +311,11 @@ const AdminMovies = () => {
                 <div className="form-group">
                   <label className="form-label">Poster Image URL *</label>
                   <input
-                    type="url"
+                    type="text"
                     className="form-control"
                     value={formData.posterUrl}
                     onChange={(e) => setFormData({ ...formData, posterUrl: e.target.value })}
+                    placeholder="/posters/movie-name.jpg or https://..."
                     required
                   />
                 </div>
@@ -312,10 +323,11 @@ const AdminMovies = () => {
                 <div className="form-group">
                   <label className="form-label">Backdrop Image URL *</label>
                   <input
-                    type="url"
+                    type="text"
                     className="form-control"
                     value={formData.backdropUrl}
                     onChange={(e) => setFormData({ ...formData, backdropUrl: e.target.value })}
+                    placeholder="/backdrops/movie-name.jpg or https://..."
                     required
                   />
                 </div>
@@ -376,12 +388,24 @@ const AdminMovies = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Trailer Video URL (YouTube)</label>
+                  <label className="form-label">Official Trailer URL (YouTube)</label>
                   <input
                     type="text"
                     className="form-control"
+                    placeholder="https://www.youtube.com/watch?v=..."
                     value={formData.trailerUrl}
                     onChange={(e) => setFormData({ ...formData, trailerUrl: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Alternative Trailer URL (Optional)</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    value={formData.alternativeTrailerUrl}
+                    onChange={(e) => setFormData({ ...formData, alternativeTrailerUrl: e.target.value })}
                   />
                 </div>
 

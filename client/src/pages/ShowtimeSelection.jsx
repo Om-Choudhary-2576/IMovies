@@ -147,6 +147,9 @@ const ShowtimeSelection = () => {
                 <img
                   src={movie.posterUrl}
                   alt={movie.title}
+                  onError={(e) => {
+                    e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="90" viewBox="0 0 60 90"><rect width="60" height="90" fill="%23161c2b"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="%238b5cf6" font-family="sans-serif" font-size="18">🎬</text></svg>';
+                  }}
                   style={{ width: '60px', height: '90px', objectFit: 'cover', borderRadius: '8px' }}
                 />
                 <div>
